@@ -3,6 +3,9 @@ use gpui::{
     prelude::*, px, rgb, size,
 };
 
+mod ui;
+mod scripting;
+
 struct HelloWorld {
     text: SharedString,
 }

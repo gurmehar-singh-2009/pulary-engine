@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 gpui = "0.2.2"
+rune = { git = "https://github.com/rune-rs/rune.git" }
 
 [patch.crates-io]
 xattr = { path = "vendor/xattr" }
