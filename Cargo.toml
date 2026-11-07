@@ -9,3 +9,28 @@ rune = { git = "https://github.com/rune-rs/rune.git" }
 
 [patch.crates-io]
 xattr = { path = "vendor/xattr" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+debug = false
+overflow-checks = false
+incremental = false
+panic = "abort"
+strip = "debuginfo"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+
+nursery = { level = "deny", priority = -1 }
+
+cargo = { level = "deny", priority = -1 }
+
+missing_docs_in_private_items = "warn"
+todo = "deny"
+unimplemented = "deny"
+print_stdout = "warn"
+print_stderr = "warn"
+multiple_crate_versions = "allow"

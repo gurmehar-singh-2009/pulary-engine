@@ -1,23 +1,27 @@
-//! See: https://rune-rs.github.io/book/introduction.html
+//! See: <https://rune-rs.github.io/book/introduction.html>
 
-use gpui::SharedString;
-use rune::alloc::String;
 use rune::runtime::{Args, GuardedArgs};
-use rune::termcolor::{ColorChoice, StandardStream};
-use rune::{Context, Diagnostics, Source, Sources, Value, Vm, VmError};
+use rune::{Context, Diagnostics, Source, Sources, ToTypeHash, Value, Vm, VmError};
 
+/// The scripting engine. This will handle everything with Rune.
+/// Technically though, EVERYTHING is inside Rune!
 pub struct ScriptingContext {
+    /// The Rune context.
     context: Context,
+    /// The script sources. Currently should only be the editor.
     sources: Sources,
+    /// The diagnostics report config.
     diagnostics: Diagnostics,
 
+    /// The virtual machine itself. Only created when a script is ran.
     vm: Option<Vm>,
 }
 
 impl ScriptingContext {
+    /// Create a new scripting engine instance.
     pub fn new() -> Self {
         let context = Context::new();
-        let mut sources = Sources::new();
+        let sources = Sources::new();
         let diagnostics = Diagnostics::new();
 
         Self {
@@ -29,9 +33,10 @@ impl ScriptingContext {
         }
     }
 
+    /// Run the script.
     pub fn run_script(&mut self, content: &str) {
         let editor_source = Source::memory("pub fn add(a, b) { a + b }").unwrap();
-        self.sources.insert(editor_source);
+        self.sources.insert(editor_source).unwrap();
 
         // Run the script in the VM.
         let result = rune::prepare(&mut self.sources)
@@ -44,16 +49,16 @@ impl ScriptingContext {
     }
 
     /// Calls a script function by the name.
-    /// 
+    ///
     /// Returns `rune::Value::empty()` if not loaded.
     #[must_use]
-    pub fn vm_call<T: Args + GuardedArgs>(
+    pub fn vm_call(
         &mut self,
-        func: String,
-        args: T,
+        func: impl ToTypeHash,
+        args: impl Args + GuardedArgs,
     ) -> Result<Value, VmError> {
         if let Some(vm) = &mut self.vm {
-            vm.call(&[func], args)
+            vm.call(func, args)
         } else {
             Ok(Value::empty())
         }
