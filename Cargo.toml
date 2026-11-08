@@ -7,6 +7,9 @@ edition = "2024"
 gpui = "0.2.2"
 rune = { git = "https://github.com/rune-rs/rune.git" }
 
+[profile.dev.package."*"]
+opt-level = 3
+
 [patch.crates-io]
 xattr = { path = "vendor/xattr" }
 
