@@ -3,6 +3,7 @@ use gpui::{IntoElement, ParentElement, Render, Styled, div, px, relative, rgb};
 use crate::ui::{components::colors::THEME, node_explorer::node_explorer_ui};
 
 mod components;
+mod icons;
 mod node_explorer;
 
 pub struct Ui {}
