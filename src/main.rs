@@ -1,3 +1,5 @@
+#![feature(default_field_values)]
+
 use gpui::{
     App, Application, Bounds, Context, SharedString, Window, WindowBounds, WindowOptions, div,
     prelude::*, px, rgb, size,

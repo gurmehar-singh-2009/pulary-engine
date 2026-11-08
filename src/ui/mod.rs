@@ -1,5 +1,7 @@
+mod components;
+
 // use gpui::{Application, SharedString, TitlebarOptions, WindowOptions};
-// 
+//
 // pub fn init_ui() {
 //     Application::new().run(|cx| {
 //         cx.open_window(
