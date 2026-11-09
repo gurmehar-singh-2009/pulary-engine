@@ -1,13 +1,24 @@
-use gpui::{IntoElement, ParentElement, Styled, div, px, relative, rgb};
+use std::{ops::Add, sync::atomic::Ordering};
+
+use gpui::{
+    AnyElement, InteractiveElement, IntoElement, ParentElement, Styled, div,
+    prelude::FluentBuilder, px, relative, rgb,
+};
 
 mod entry;
 
-use crate::ui::{
-    components::colors::THEME,
-    icons::{Icon, icon},
+use crate::{
+    scripting::file_system::{Entry, FileSystem},
+    ui::{
+        components::colors::THEME,
+        icons::{Icon, icon},
+    },
 };
 
-pub fn node_explorer_ui(window: &mut gpui::Window) -> impl IntoElement {
+pub fn node_explorer_ui(
+    file_system: &mut FileSystem,
+    window: &mut gpui::Window,
+) -> impl IntoElement {
     let viewport_size = window.viewport_size();
 
     div()
@@ -40,4 +51,44 @@ pub fn node_explorer_ui(window: &mut gpui::Window) -> impl IntoElement {
                         .children([icon(Icon::Filter), icon(Icon::Copy), icon(Icon::Trash)]),
                 ),
         )
+        .child(file_tree(&mut file_system.entries))
+}
+
+fn file_tree(entries: &mut [Entry]) -> AnyElement {
+    div()
+        .flex()
+        .flex_col()
+        .text_color(rgb(THEME.text_c1))
+        .children(entries.iter_mut().map(|entry| {
+            let expanded = entry.expanded.clone();
+
+            div()
+                .flex()
+                .flex_col()
+                .child(
+                    div()
+                        .h(px(24.))
+                        .flex()
+                        .items_center()
+                        .gap(px(12.))
+                        .px(px(8.))
+                        .text_size(px(14.))
+                        .text_color(rgb(THEME.text_c3))
+                        .on_mouse_up(gpui::MouseButton::Left, move |_, w, _| {
+                            expanded.fetch_xor(true, Ordering::Relaxed);
+                            w.refresh();
+                        })
+                        .child(if entry.is_file {
+                            icon(Icon::File)
+                        } else {
+                            icon(Icon::Folder)
+                        })
+                        .child(entry.name.to_string())
+                )
+                .when(
+                    entry.expanded.load(Ordering::Relaxed) && !entry.children.is_empty(),
+                    |el| el.child(div().pl(px(12.)).child(file_tree(&mut entry.children))),
+                )
+        }))
+        .into_any_element()
 }

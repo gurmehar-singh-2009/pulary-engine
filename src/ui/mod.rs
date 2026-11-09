@@ -1,4 +1,5 @@
-use std::sync::Arc;
+use std::ops::Deref;
+use std::sync::{Arc, Mutex};
 
 use gpui::AppContext;
 use gpui::{
@@ -7,6 +8,7 @@ use gpui::{
     px, relative, rgb, size,
 };
 
+use crate::scripting::file_system::FileSystem;
 use crate::ui::{
     components::colors::THEME,
     file_system::node_explorer_ui,
@@ -27,6 +29,7 @@ pub enum TopBarTab {
 
 pub struct Ui {
     pub active_tab: TopBarTab,
+    pub file_system: Arc<Mutex<FileSystem>>,
 }
 
 impl Render for Ui {
@@ -42,7 +45,10 @@ impl Render for Ui {
             .bg(rgb(THEME.background))
             .text_color(rgb(THEME.text_c1))
             .when(self.active_tab == TopBarTab::Editor, |el| {
-                el.child(node_explorer_ui(window))
+                el.child(node_explorer_ui(
+                    self.file_system.lock().as_mut().unwrap(),
+                    window,
+                ))
             })
             .child(
                 div()
@@ -58,7 +64,7 @@ impl Render for Ui {
 }
 
 impl Ui {
-    pub fn new() {
+    pub fn new(file_system: Arc<Mutex<FileSystem>>) {
         Application::new().with_assets(Assets).run(|cx: &mut App| {
             let bounds = Bounds::centered(None, size(px(500.), px(500.0)), cx);
             cx.open_window(
@@ -69,6 +75,7 @@ impl Ui {
                 |_, cx| {
                     cx.new(|_| Ui {
                         active_tab: TopBarTab::Editor,
+                        file_system,
                     })
                 },
             )

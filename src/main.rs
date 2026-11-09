@@ -1,5 +1,7 @@
 #![feature(default_field_values)]
 
+use std::sync::{Arc, Mutex};
+
 use crate::scripting::ScriptingContext;
 use crate::scripting::file_system::FileSystem;
 use crate::ui::Ui;
@@ -10,15 +12,18 @@ mod ui;
 struct Engine {
     pub ui: (),
     pub scripting: ScriptingContext,
-    pub file_system: FileSystem<'static>,
+    pub file_system: Arc<Mutex<FileSystem>>,
 }
 
 impl Engine {
     pub fn new() -> Self {
+        let scripting = ScriptingContext::new();
+        let file_system = Arc::new(Mutex::new(FileSystem::new()));
+
         Self {
-            ui: Ui::new(),
-            scripting: ScriptingContext::new(),
-            file_system: FileSystem::new(),
+            ui: Ui::new(file_system.clone()),
+            scripting,
+            file_system,
         }
     }
 }
