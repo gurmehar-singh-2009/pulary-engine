@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+crop = "0.4.3"
 gpui = "0.2.2"
 rune = { git = "https://github.com/rune-rs/rune.git" }
 rust-embed = "8.13.0"

@@ -1,28 +1,28 @@
 #![feature(default_field_values)]
 
-use gpui::{App, Application, Bounds, WindowBounds, WindowOptions, px, size};
-
-use gpui::AppContext;
-
+use crate::scripting::ScriptingContext;
+use crate::scripting::file_system::FileSystem;
 use crate::ui::Ui;
 
 mod scripting;
 mod ui;
 
+struct Engine {
+    pub ui: (),
+    pub scripting: ScriptingContext,
+    pub file_system: FileSystem<'static>,
+}
+
+impl Engine {
+    pub fn new() -> Self {
+        Self {
+            ui: Ui::new(),
+            scripting: ScriptingContext::new(),
+            file_system: FileSystem::new(),
+        }
+    }
+}
+
 fn main() {
-    Application::new().with_assets(ui::Assets).run(|cx: &mut App| {
-        let bounds = Bounds::centered(None, size(px(500.), px(500.0)), cx);
-        cx.open_window(
-            WindowOptions {
-                window_bounds: Some(WindowBounds::Maximized(bounds)),
-                ..Default::default()
-            },
-            |_, cx| {
-                cx.new(|_| Ui {
-                    active_tab: ui::TopBarTab::Editor,
-                })
-            },
-        )
-        .unwrap();
-    });
+    let _ = Engine::new();
 }

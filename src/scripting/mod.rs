@@ -3,6 +3,8 @@
 use rune::runtime::{Args, GuardedArgs};
 use rune::{Context, Diagnostics, Source, Sources, ToTypeHash, Value, Vm, VmError};
 
+pub mod file_system;
+
 /// The scripting engine. This will handle everything with Rune.
 /// Technically though, EVERYTHING is inside Rune!
 pub struct ScriptingContext {

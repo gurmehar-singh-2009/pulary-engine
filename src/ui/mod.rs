@@ -1,19 +1,21 @@
 use std::sync::Arc;
 
+use gpui::AppContext;
 use gpui::{
-    Context, InteractiveElement, IntoElement, ParentElement, Render, StatefulInteractiveElement,
-    Styled, div, prelude::FluentBuilder, px, relative, rgb,
+    App, Application, Bounds, Context, InteractiveElement, IntoElement, ParentElement, Render,
+    StatefulInteractiveElement, Styled, WindowBounds, WindowOptions, div, prelude::FluentBuilder,
+    px, relative, rgb, size,
 };
 
 use crate::ui::{
     components::colors::THEME,
+    file_system::node_explorer_ui,
     icons::{Icon, icon},
-    node_explorer::node_explorer_ui,
 };
 
 mod components;
+mod file_system;
 mod icons;
-mod node_explorer;
 
 pub use icons::Assets;
 
@@ -56,6 +58,24 @@ impl Render for Ui {
 }
 
 impl Ui {
+    pub fn new() {
+        Application::new().with_assets(Assets).run(|cx: &mut App| {
+            let bounds = Bounds::centered(None, size(px(500.), px(500.0)), cx);
+            cx.open_window(
+                WindowOptions {
+                    window_bounds: Some(WindowBounds::Maximized(bounds)),
+                    ..Default::default()
+                },
+                |_, cx| {
+                    cx.new(|_| Ui {
+                        active_tab: TopBarTab::Editor,
+                    })
+                },
+            )
+            .unwrap();
+        });
+    }
+
     fn top_bar(&self, cx: &Context<Ui>) -> impl IntoElement {
         div()
             .w_full()

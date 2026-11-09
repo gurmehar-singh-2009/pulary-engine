@@ -1,5 +1,7 @@
 use gpui::{IntoElement, ParentElement, Styled, div, px, relative, rgb};
 
+mod entry;
+
 use crate::ui::{
     components::colors::THEME,
     icons::{Icon, icon},
@@ -7,7 +9,6 @@ use crate::ui::{
 
 pub fn node_explorer_ui(window: &mut gpui::Window) -> impl IntoElement {
     let viewport_size = window.viewport_size();
-    let max_h = viewport_size.height;
 
     div()
         .w(relative(0.25))
