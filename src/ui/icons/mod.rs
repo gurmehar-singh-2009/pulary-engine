@@ -8,18 +8,31 @@ use crate::ui::components::colors::THEME;
 #[derive(RustEmbed)]
 #[folder = "src/ui/icons/icons/"]
 #[prefix = "icons/"]
+struct IconFiles;
+
 pub struct Assets;
 
 impl AssetSource for Assets {
     fn load(&self, path: &str) -> gpui::Result<Option<Cow<'static, [u8]>>> {
-        Ok(Self::get(path).map(|file| file.data))
+        match IconFiles::get(path) {
+            Some(file) => Ok(Some(file.data)),
+            None => gpui_kit::assets::Assets.load(path),
+        }
     }
 
     fn list(&self, path: &str) -> gpui::Result<Vec<SharedString>> {
-        Ok(Self::iter()
+        let mut assets: Vec<SharedString> = IconFiles::iter()
             .filter(|p| p.starts_with(path))
             .map(SharedString::from)
-            .collect())
+            .collect();
+
+        for asset in gpui_kit::assets::Assets.list(path)? {
+            if !assets.contains(&asset) {
+                assets.push(asset);
+            }
+        }
+
+        Ok(assets)
     }
 }
 

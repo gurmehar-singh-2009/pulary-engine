@@ -5,22 +5,34 @@ edition = "2024"
 
 [dependencies]
 crop = "0.4.3"
-gpui = "0.2.2"
+gpui = { package = "gpui-pre", version = "=0.3.12" }
 gpui-component = "0.9.1"
 gpui-kit = { version = "0.9.1", features = ["tree-sitter-languages"] }
 rune = { git = "https://github.com/rune-rs/rune.git" }
 rust-embed = "8.13.0"
+gpui-component-story = { git = "https://github.com/longbridge/gpui-kit" }
 autocorrect = "2.14.2"
 chrono = "0.4"
 color-lsp = "0.2.0"
 tree-sitter-navi = "0.2.3"
-gpui-component-story = { git = "https://github.com/longbridge/gpui-kit/crates/story" }
+# story = { git = "https://github.com/longbridge/gpui-kit/crates/story" }
+lsp-types = { version = "0.97.0", features = ["proposed"] }
+serde_json = "1"
+smol = "2"
 
 [profile.dev.package."*"]
 opt-level = 3
 
 [patch.crates-io]
 xattr = { path = "vendor/xattr" }
+# gpui-component-story only exists in the gpui-kit repo, so take the rest of
+# gpui-kit from the same repo; two copies conflict on their native `links`.
+gpui-kit = { git = "https://github.com/longbridge/gpui-kit" }
+gpui-component = { git = "https://github.com/longbridge/gpui-kit" }
+gpui-kit-assets = { git = "https://github.com/longbridge/gpui-kit" }
+gpui-base = { git = "https://github.com/longbridge/gpui-kit" }
+gpui-component-macros = { git = "https://github.com/longbridge/gpui-kit" }
+gpui-fps = { git = "https://github.com/longbridge/gpui-kit" }
 
 [profile.release]
 opt-level = 3

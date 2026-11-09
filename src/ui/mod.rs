@@ -3,19 +3,21 @@ use std::sync::{Arc, Mutex};
 
 use gpui::AppContext;
 use gpui::{
-    App, Application, Bounds, Context, InteractiveElement, IntoElement, ParentElement, Render,
-    StatefulInteractiveElement, Styled, WindowBounds, WindowOptions, div, prelude::FluentBuilder,
-    px, relative, rgb, size,
+    App, Bounds, Context, Entity, InteractiveElement, IntoElement, ParentElement, Render,
+    StatefulInteractiveElement, Styled, Window, WindowBounds, WindowOptions, div,
+    prelude::FluentBuilder, px, relative, rgb, size,
 };
 
 use crate::scripting::file_system::FileSystem;
 use crate::ui::{
-    components::colors::THEME,
+    components::{colors::THEME, theme},
+    editor::CodeEditor,
     file_system::node_explorer_ui,
     icons::{Icon, icon},
 };
 
 mod components;
+mod editor;
 mod file_system;
 mod icons;
 
@@ -30,6 +32,7 @@ pub enum TopBarTab {
 pub struct Ui {
     pub active_tab: TopBarTab,
     pub file_system: Arc<Mutex<FileSystem>>,
+    editor: Entity<CodeEditor>,
 }
 
 impl Render for Ui {
@@ -57,30 +60,48 @@ impl Render for Ui {
                     .flex()
                     .flex_col()
                     .child(self.top_bar(cx))
-                    .child(div().flex_1())
-                    .child(status_bar()),
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_h_0()
+                            .when(self.active_tab == TopBarTab::Editor, |el| {
+                                el.child(self.editor.clone())
+                            }),
+                    )
+                    .child(self.status_bar(window, cx)),
             )
     }
 }
 
 impl Ui {
     pub fn new(file_system: Arc<Mutex<FileSystem>>) {
-        Application::new().with_assets(Assets).run(|cx: &mut App| {
-            let bounds = Bounds::centered(None, size(px(500.), px(500.0)), cx);
-            cx.open_window(
-                WindowOptions {
-                    window_bounds: Some(WindowBounds::Maximized(bounds)),
-                    ..Default::default()
-                },
-                |_, cx| {
-                    cx.new(|_| Ui {
-                        active_tab: TopBarTab::Editor,
-                        file_system,
-                    })
-                },
-            )
-            .unwrap();
-        });
+        gpui_kit::application()
+            .with_assets(Assets)
+            .run(move |cx: &mut App| {
+                gpui_component_story::init(cx);
+                editor::init();
+                theme::apply(cx);
+                cx.activate(true);
+
+                let bounds = Bounds::centered(None, size(px(500.), px(500.0)), cx);
+                gpui_kit::open_window(
+                    WindowOptions {
+                        window_bounds: Some(WindowBounds::Maximized(bounds)),
+                        ..Default::default()
+                    },
+                    cx,
+                    |window, cx| {
+                        let editor = cx.new(|cx| CodeEditor::new(window, cx));
+
+                        cx.new(|_| Ui {
+                            active_tab: TopBarTab::Editor,
+                            file_system,
+                            editor,
+                        })
+                    },
+                )
+                .unwrap();
+            });
     }
 
     fn top_bar(&self, cx: &Context<Ui>) -> impl IntoElement {
@@ -151,6 +172,35 @@ impl Ui {
                 cx.notify();
             }))
     }
+
+    fn status_bar(&self, window: &mut Window, cx: &mut Context<Ui>) -> impl IntoElement {
+        div()
+            .w_full()
+            .h(px(24.))
+            .flex()
+            .flex_row()
+            .items_center()
+            .justify_between()
+            .gap(px(8.))
+            .px(px(12.))
+            .bg(rgb(THEME.foreground))
+            .border_t_1()
+            .border_color(rgb(THEME.border))
+            .child(div().flex().flex_row().items_center().when(
+                self.active_tab == TopBarTab::Editor,
+                |el| {
+                    el.child(
+                        self.editor
+                            .update(cx, |editor, cx| editor.status_items(window, cx)),
+                    )
+                },
+            ))
+            .child(icon_group([
+                icon(Icon::Info),
+                icon(Icon::Warning),
+                icon(Icon::Error),
+            ]))
+    }
 }
 
 fn icon_group<const N: usize>(icons: [impl IntoElement; N]) -> impl IntoElement {
@@ -160,20 +210,4 @@ fn icon_group<const N: usize>(icons: [impl IntoElement; N]) -> impl IntoElement 
         .items_center()
         .gap(px(8.))
         .children(icons)
-}
-
-fn status_bar() -> impl IntoElement {
-    div()
-        .w_full()
-        .h(px(24.))
-        .flex()
-        .flex_row()
-        .items_center()
-        .justify_end()
-        .gap(px(8.))
-        .px(px(12.))
-        .bg(rgb(THEME.foreground))
-        .border_t_1()
-        .border_color(rgb(THEME.border))
-        .children([icon(Icon::Info), icon(Icon::Warning), icon(Icon::Error)])
 }
