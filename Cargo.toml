@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 gpui = "0.2.2"
 rune = { git = "https://github.com/rune-rs/rune.git" }
+rust-embed = "8.13.0"
 
 [profile.dev.package."*"]
 opt-level = 3

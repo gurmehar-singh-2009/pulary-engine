@@ -10,14 +10,18 @@ mod scripting;
 mod ui;
 
 fn main() {
-    Application::new().run(|cx: &mut App| {
+    Application::new().with_assets(ui::Assets).run(|cx: &mut App| {
         let bounds = Bounds::centered(None, size(px(500.), px(500.0)), cx);
         cx.open_window(
             WindowOptions {
-                window_bounds: Some(WindowBounds::Windowed(bounds)),
+                window_bounds: Some(WindowBounds::Maximized(bounds)),
                 ..Default::default()
             },
-            |_, cx| cx.new(|_| Ui {}),
+            |_, cx| {
+                cx.new(|_| Ui {
+                    active_tab: ui::TopBarTab::Editor,
+                })
+            },
         )
         .unwrap();
     });
